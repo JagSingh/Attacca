@@ -103,9 +103,13 @@ struct Breadcrumb: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
             }
+            // A horizontal ScrollView is vertically greedy: pin it to its content height,
+            // otherwise it fills the screen and squeezes the folder list to zero.
+            .fixedSize(horizontal: false, vertical: true)
             .onAppear { proxy.scrollTo("end", anchor: .trailing) }
             .onChange(of: crumbs) { proxy.scrollTo("end", anchor: .trailing) }
         }
+        .fixedSize(horizontal: false, vertical: true)
         .background(.bar)
         .overlay(alignment: .bottom) { Divider() }
     }
