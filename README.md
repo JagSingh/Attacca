@@ -32,6 +32,18 @@ builds an unsigned `Attacca.ipa` on a GitHub-hosted macOS runner via `.github/wo
 3. `Attacca.app` is packaged as `Payload/Attacca.app` → `Attacca.ipa`
 4. The IPA is uploaded as the run artifact **`Attacca-ipa`** (kept 30 days) and published as a **GitHub Release** (`build-N`, marked Latest)
 
+## Releases & versions
+
+- Push to `main` → **dev build**, published as a pre-release `build-N`.
+- Push a tag `vX.Y.Z` → **versioned release** `Attacca X.Y.Z`, marked **Latest**.
+  The app's version is taken from the tag; the build number is the Actions run number.
+- The phone link `…/releases/latest/download/Attacca.ipa` always gives the newest **versioned** release.
+- Version shown in the app: ⚙︎ → bottom of the screen.
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0     # cut a release
+```
+
 ## Install (SideStore)
 
 SideStore signs the IPA on the iPhone with your Apple ID.

@@ -7,6 +7,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"     # app version (CI overrides it from the git tag, e.g. v1.0.0)
+    CURRENT_PROJECT_VERSION: "1"   # build number (CI sets it to the Actions run number)
 packages:
   SFBAudioEngine:
     url: https://github.com/sbooth/SFBAudioEngine
@@ -33,3 +35,5 @@ targets:
       properties:
         UIBackgroundModes: [audio]
         UILaunchScreen: {}
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)

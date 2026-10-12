@@ -13,9 +13,17 @@ import UniformTypeIdentifiers
 /// Explains the one-time iCloud Drive grant: why it's required (Apple privacy rules),
 /// exactly what to tap, and that iCloud Drive itself is the choice that works.
 struct SetupView: View {
-    /// true on first launch; false when re-opened from the folder button.
+    /// true on first launch; false when re-opened from the settings button.
     let isFirstRun: Bool
     let onContinue: () -> Void
+
+    /// e.g. "Attacca 1.0.0 (build 42)"
+    static var versionString: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "Attacca \(version) (build \(build))"
+    }
 
     var body: some View {
         ScrollView {
@@ -84,6 +92,11 @@ struct SetupView: View {
                         Text("You won't see this screen again.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+                    } else {
+                        Text(Self.versionString)
+                            .font(.footnote.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 8)
                     }
                 }
             }
