@@ -50,7 +50,7 @@ SideStore signs the IPA on the iPhone with your Apple ID.
 
 1. One-time: install SideStore via iloader (computer + USB), install **LocalDevVPN**,
    enable **Settings → Privacy & Security → Developer Mode**.
-2. In iPhone Safari open `https://github.com/<owner>/Attacca/releases/latest/download/Attacca.ipa` → **Download** (lands in Files → Downloads; nothing to unzip).
+2. In iPhone Safari open `https://github.com/<owner>/Attacca/releases/latest/download/Attacca.ipa` → **Download** (lands in Files → Downloads).
 3. Connect LocalDevVPN → **SideStore → My Apps → +** → pick `Attacca.ipa`.
 4. Every 7 days: LocalDevVPN → SideStore → **Refresh All**.
 
@@ -81,9 +81,8 @@ Bundle ID: `com.jagmsingh.attacca` (SideStore appends your team ID when signing)
 ## Notes
 - Audio engine: [SFBAudioEngine](https://github.com/sbooth/SFBAudioEngine) 0.14.0 (MIT), pinned in `project.yml`.
   Some bundled codecs are LGPL and are linked statically here, which is fine for personal use;
-  redistributing the built app would require dynamic linking.
+  redistributing the app would require dynamic linking.
 - First build takes longer (~10–15 min) while Swift Package Manager fetches and compiles the codecs.
-- Also works with other Files providers (Dropbox, OneDrive) if their apps are installed, though their offline behavior is less predictable.
 - For strict byte-order sorting instead of Finder-style, replace `localizedStandardCompare` with `<` in `Library.swift`.
 
 ---
