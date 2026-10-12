@@ -16,13 +16,21 @@ enum CloudFileError: LocalizedError {
 
 /// Makes sure an iCloud Drive (or other File Provider) file is on the device before playback.
 enum CloudFile {
+    /// True when the file's bytes are on the device.
+    /// Uses iCloud's download status when iOS reports it; otherwise detects a "dataless"
+    /// placeholder (has a size, but no disk space allocated).
     static func isDownloaded(_ url: URL) -> Bool {
-        guard let values = try? url.resourceValues(forKeys: [.isUbiquitousItemKey,
-                                                              .ubiquitousItemDownloadingStatusKey])
+        let keys: Set<URLResourceKey> = [.ubiquitousItemDownloadingStatusKey,
+                                         .fileSizeKey, .totalFileAllocatedSizeKey]
+        guard let v = try? url.resourceValues(forKeys: keys)
         else { return FileManager.default.fileExists(atPath: url.path) }
-        guard values.isUbiquitousItem == true else { return true } // plain local file
-        let status = values.ubiquitousItemDownloadingStatus
-        return status == .current || status == .downloaded
+        if let status = v.ubiquitousItemDownloadingStatus {
+            return status == .current || status == .downloaded
+        }
+        if let size = v.fileSize, size > 0, let allocated = v.totalFileAllocatedSize, allocated == 0 {
+            return false
+        }
+        return true
     }
 
     /// Kicks off a non-blocking download (used for prefetch and "Download All").
