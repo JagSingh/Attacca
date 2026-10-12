@@ -6,48 +6,56 @@
 //
 
 import SwiftUI
-import UniformTypeIdentifiers
 
 // MARK: - Root
 
 struct RootView: View {
     @Environment(FolderAccess.self) private var access
     @Environment(Player.self) private var player
-    @State private var isPicking = false
+    @State private var isPicking = false        // first-run picker
+    @State private var showSetup = false        // setup sheet from the folder button
+    @State private var sheetPicking = false     // picker launched from that sheet
 
     var body: some View {
-        NavigationStack {
+        @Bindable var access = access
+
+        NavigationStack(path: $access.path) {
             Group {
                 if let root = access.rootURL {
-                    FolderView(url: root, title: root.lastPathComponent)
+                    FolderView(url: root, level: 0)
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
-                                Button { isPicking = true } label: {
-                                    Image(systemName: "folder.badge.gearshape")
+                                Button { showSetup = true } label: {
+                                    Image(systemName: access.isLimitedToSubfolder
+                                          ? "exclamationmark.icloud" : "folder.badge.gearshape")
                                 }
-                                .accessibilityLabel("Change music folder")
+                                .accessibilityLabel("Change iCloud access")
                             }
                         }
                 } else {
-                    ContentUnavailableView {
-                        Label("No Music Folder", systemImage: "folder")
-                    } description: {
-                        Text("Choose a folder in iCloud Drive that contains your music.")
-                    } actions: {
-                        Button("Choose Folder") { isPicking = true }
-                            .buttonStyle(.borderedProminent)
-                    }
+                    SetupView(isFirstRun: true) { isPicking = true }
                 }
             }
             .navigationDestination(for: FolderItem.self) { folder in
-                FolderView(url: folder.url, title: folder.name)
+                FolderView(url: folder.url,
+                           level: (access.path.firstIndex(of: folder) ?? access.path.count - 1) + 1)
             }
         }
+        .onChange(of: access.path) { access.savePath() }
         .safeAreaInset(edge: .bottom) {
             if player.current != nil { MiniPlayer() }
         }
-        .fileImporter(isPresented: $isPicking, allowedContentTypes: [.folder]) { result in
-            if case .success(let url) = result { access.set(url) }
+        .iCloudPicker(isPresented: $isPicking)
+        .sheet(isPresented: $showSetup) {
+            NavigationStack {
+                SetupView(isFirstRun: false) { sheetPicking = true }
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") { showSetup = false }
+                        }
+                    }
+            }
+            .iCloudPicker(isPresented: $sheetPicking) { showSetup = false }
         }
         .alert("Playback",
                isPresented: Binding(get: { player.errorMessage != nil },
@@ -59,11 +67,55 @@ struct RootView: View {
     }
 }
 
+// MARK: - Breadcrumb
+
+/// "iCloud Drive : Music1folder : Music2folder" — every ancestor is tappable.
+struct Breadcrumb: View {
+    let level: Int
+    @Environment(FolderAccess.self) private var access
+
+    private var crumbs: [String] {
+        [access.rootName] + access.path.prefix(level).map(\.name)
+    }
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(Array(crumbs.enumerated()), id: \.offset) { i, name in
+                        if i > 0 {
+                            Text(":").foregroundStyle(.tertiary)
+                        }
+                        if i == crumbs.count - 1 {
+                            Text(name)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                        } else {
+                            Button(name) { access.goTo(level: i) }
+                                .buttonStyle(.plain)
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                    Color.clear.frame(width: 1).id("end")
+                }
+                .font(.subheadline)
+                .lineLimit(1)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+            }
+            .onAppear { proxy.scrollTo("end", anchor: .trailing) }
+            .onChange(of: crumbs) { proxy.scrollTo("end", anchor: .trailing) }
+        }
+        .background(.bar)
+        .overlay(alignment: .bottom) { Divider() }
+    }
+}
+
 // MARK: - Folder
 
 struct FolderView: View {
     let url: URL
-    let title: String
+    let level: Int          // 0 = root; matches the breadcrumb depth
 
     @Environment(Player.self) private var player
     @State private var contents = FolderContents()
@@ -113,7 +165,9 @@ struct FolderView: View {
                                        description: Text("No subfolders or audio files here."))
             }
         }
-        .navigationTitle(title)
+        .safeAreaInset(edge: .top, spacing: 0) { Breadcrumb(level: level) }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if contents.tracks.contains(where: { !$0.isLocal }) {
                 ToolbarItem(placement: .topBarTrailing) {

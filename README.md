@@ -6,7 +6,11 @@ Minimal iOS 17+ SwiftUI app: pick a folder in iCloud Drive, browse its subfolder
 and play every audio file in a folder one after another, sorted by file name.
 
 ## Features
-- Folder picker (persists across launches via a security-scoped bookmark)
+- One-time **setup screen** explaining the iCloud Drive grant (an Apple privacy requirement), with steps;
+  the choice is validated, so picking a sub-folder by mistake triggers an explanation and a retry
+- The grant persists via a security-scoped bookmark; all browsing is then in-app
+- Reopens in the **last folder viewed**
+- Clickable **breadcrumb** at the top (`iCloud Drive : Music : Bach`): tap any level to jump there
 - Folder tree browsing, audio files listed per folder
 - Sequential playback in name order (Finder-style: "Track 2" before "Track 10")
 - **Gapless** transitions between tracks (true *attacca*), via SFBAudioEngine
@@ -26,7 +30,7 @@ builds an unsigned `Attacca.ipa` on a GitHub-hosted macOS runner via `.github/wo
 1. `xcodegen generate` creates `Attacca.xcodeproj` from `project.yml`
 2. `xcodebuild` builds for iOS with code signing disabled
 3. `Attacca.app` is packaged as `Payload/Attacca.app` → `Attacca.ipa`
-4. The IPA is uploaded as the run artifact **`Attacca-ipa`** (kept 30 days)
+4. The IPA is uploaded as the run artifact **`Attacca-ipa`** (kept 30 days) and published as a **GitHub Release** (`build-N`, marked Latest)
 
 ## Install (SideStore)
 
@@ -34,7 +38,7 @@ SideStore signs the IPA on the iPhone with your Apple ID.
 
 1. One-time: install SideStore via iloader (computer + USB), install **LocalDevVPN**,
    enable **Settings → Privacy & Security → Developer Mode**.
-2. Download **`Attacca-ipa`** from the run page in Safari; tap the zip in Files to extract `Attacca.ipa`.
+2. In iPhone Safari open `https://github.com/<owner>/Attacca/releases/latest/download/Attacca.ipa` → **Download** (lands in Files → Downloads; nothing to unzip).
 3. Connect LocalDevVPN → **SideStore → My Apps → +** → pick `Attacca.ipa`.
 4. Every 7 days: LocalDevVPN → SideStore → **Refresh All**.
 
@@ -42,7 +46,7 @@ Bundle ID: `com.jagmsingh.attacca` (SideStore appends your team ID when signing)
 
 ## Use
 1. Put music in a folder in iCloud Drive (from a Mac, iCloud.com, or the Files app).
-2. Launch, tap **Choose Folder**, select that folder.
+2. First launch: tap **Choose iCloud Drive**, then in the picker tap **iCloud Drive** → **Open** (one time only).
 3. Tap a track to play from there, or **Play All**.
 
 ## Offline
@@ -53,11 +57,14 @@ Bundle ID: `com.jagmsingh.attacca` (SideStore appends your team ID when signing)
 | File | Role |
 |---|---|
 | `AttaccaApp.swift` | App entry, injects shared state |
-| `FolderAccess.swift` | Picked root folder + persistent bookmark |
+| `FolderAccess.swift` | Granted root + bookmark, navigation path persisted across launches |
 | `Library.swift` | Lists folders/audio files, sorting, placeholder names |
 | `CloudFile.swift` | iCloud download status, on-demand download with timeout |
 | `Player.swift` | SFBAudioEngine `AudioPlayer`: gapless queue, auto-advance, Now Playing, remote commands |
-| `Views.swift` | Root, folder list, track rows, mini player |
+| `Views.swift` | Root, breadcrumb bar, folder list, track rows, mini player |
+| `Setup.swift` | One-time setup screen and validated iCloud Drive picker |
+| `Assets.xcassets/AppIcon` | App icon (single 1024×1024, iOS generates the rest) |
+| `design/make_icon.py` | Regenerates the icon: `python3 design/make_icon.py AppIcon.png` (needs Pillow + NumPy) |
 
 ## Notes
 - Audio engine: [SFBAudioEngine](https://github.com/sbooth/SFBAudioEngine) 0.14.0 (MIT), pinned in `project.yml`.

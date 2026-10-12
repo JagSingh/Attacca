@@ -25,6 +25,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Attacca
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         OTHER_LDFLAGS: "$(inherited) -ObjC"   # keep SFBAudioEngine's self-registering decoders
         INFOPLIST_KEY_NSHumanReadableCopyright: "(c) 2026 jag.m.singh@gmail.com"
     info:
