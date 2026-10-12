@@ -26,10 +26,9 @@ struct RootView: View {
                         .toolbar {
                             ToolbarItem(placement: .topBarLeading) {
                                 Button { showSetup = true } label: {
-                                    Image(systemName: access.isLimitedToSubfolder
-                                          ? "exclamationmark.icloud" : "folder.badge.gearshape")
+                                    Image(systemName: "gearshape")
                                 }
-                                .accessibilityLabel("Change iCloud access")
+                                .accessibilityLabel("Settings")
                             }
                         }
                 } else {
@@ -69,7 +68,8 @@ struct RootView: View {
 
 // MARK: - Breadcrumb
 
-/// "iCloud Drive : Music1folder : Music2folder" — every ancestor is tappable.
+/// "iCloud Drive : Chopin : Nocturnes" — every ancestor is tappable.
+/// Long names truncate in the middle; the current folder keeps priority.
 struct Breadcrumb: View {
     let level: Int
     @Environment(FolderAccess.self) private var access
@@ -79,37 +79,34 @@ struct Breadcrumb: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 6) {
-                    ForEach(Array(crumbs.enumerated()), id: \.offset) { i, name in
-                        if i > 0 {
-                            Text(":").foregroundStyle(.tertiary)
-                        }
-                        if i == crumbs.count - 1 {
-                            Text(name)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.primary)
-                        } else {
-                            Button(name) { access.goTo(level: i) }
-                                .buttonStyle(.plain)
-                                .foregroundStyle(Color.accentColor)
-                        }
-                    }
-                    Color.clear.frame(width: 1).id("end")
+        HStack(spacing: 6) {
+            ForEach(Array(crumbs.enumerated()), id: \.offset) { i, name in
+                if i > 0 {
+                    Text(":").foregroundStyle(.tertiary)
                 }
-                .font(.subheadline)
-                .lineLimit(1)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                if i == crumbs.count - 1 {
+                    Text(name)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .layoutPriority(1)
+                } else {
+                    Button { access.goTo(level: i) } label: {
+                        Text(name)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.accentColor)
+                }
             }
-            // A horizontal ScrollView is vertically greedy: pin it to its content height,
-            // otherwise it fills the screen and squeezes the folder list to zero.
-            .fixedSize(horizontal: false, vertical: true)
-            .onAppear { proxy.scrollTo("end", anchor: .trailing) }
-            .onChange(of: crumbs) { proxy.scrollTo("end", anchor: .trailing) }
+            Spacer(minLength: 0)
         }
-        .fixedSize(horizontal: false, vertical: true)
+        .font(.subheadline)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(.bar)
         .overlay(alignment: .bottom) { Divider() }
     }
@@ -186,6 +183,7 @@ struct FolderView: View {
         }
         .task(id: url) { reload() }
         .refreshable { reload() }
+        .onChange(of: player.current?.id) { reload() }
     }
 
     private func reload() {
