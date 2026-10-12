@@ -1,0 +1,53 @@
+# (c) 2026 jag.m.singh@gmail.com
+name: Build unsigned IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # adds a "Run workflow" button in the Actions tab
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1   # same toolchain SFBAudioEngine's own CI uses
+        with:
+          xcode-version: latest-stable
+
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build for iPhone (unsigned)
+        run: |
+          xcodebuild \
+            -project Attacca.xcodeproj \
+            -scheme Attacca \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/Attacca.app Payload/
+          zip -qry Attacca.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Attacca-ipa
+          path: Attacca.ipa
+          retention-days: 30
