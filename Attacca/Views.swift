@@ -225,28 +225,33 @@ struct MiniPlayer: View {
     @Environment(Player.self) private var player
 
     var body: some View {
-        HStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(player.current?.title ?? "")
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 10) {
+            // Full file name (no path), wrapped over as many lines as it needs.
+            Text(player.current?.name ?? "")
+                .font(.subheadline.weight(.semibold))
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 22) {
                 Text("\(player.index + 1) of \(player.queue.count)")
-                    .font(.caption)
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
+                Spacer()
+                if player.isLoading { ProgressView() }
+                Button { player.previous() } label: { Image(systemName: "backward.fill") }
+                Button { player.togglePlayPause() } label: {
+                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.title2)
+                        .frame(width: 28)
+                }
+                Button { player.next() } label: { Image(systemName: "forward.fill") }
             }
-            Spacer()
-            if player.isLoading { ProgressView() }
-            Button { player.previous() } label: { Image(systemName: "backward.fill") }
-            Button { player.togglePlayPause() } label: {
-                Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                    .font(.title2)
-                    .frame(width: 28)
-            }
-            Button { player.next() } label: { Image(systemName: "forward.fill") }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 }
