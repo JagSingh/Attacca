@@ -20,7 +20,7 @@ and play every audio file in a folder one after another, sorted by file name.
 - "Download all" button per folder (cloud icon, top right)
 - Background playback, lock-screen / Control Center controls, scrubbing
 - Handles calls and other audio interruptions
-- No iCloud entitlement or Google/Dropbox API keys needed
+- No iCloud entitlement needed
 
 ## Build (GitHub Actions only)
 
