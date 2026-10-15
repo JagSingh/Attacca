@@ -24,24 +24,26 @@ and play every audio file in a folder one after another, sorted by file name.
 
 ## Build (GitHub Actions only)
 
-No Mac or local Xcode needed. Every push to `main` (or **Actions → Build unsigned IPA → Run workflow**)
+You don't need a Mac or Xcode to build your own IPA. Every push to `main` or a `v*` tag (or **Actions → Build unsigned IPA → Run workflow**)
 builds an unsigned `Attacca.ipa` on a GitHub-hosted macOS runner via `.github/workflows/build.yml`:
 
 1. `xcodegen generate` creates `Attacca.xcodeproj` from `project.yml`
 2. `xcodebuild` builds for iOS with code signing disabled
 3. `Attacca.app` is packaged as `Payload/Attacca.app` → `Attacca.ipa`
-4. The IPA is uploaded as the run artifact **`Attacca-ipa`** (kept 30 days) and published as a **GitHub Release** (`build-N`, marked Latest)
+4. The IPA is uploaded as the run artifact **`Attacca-ipa`** (kept 30 days) and published as a GitHub Release
+   (see **Releases & versions** below)
 
 ## Releases & versions
 
-- Push to `main` → **dev build**, published as a pre-release `build-N`.
+- Push to `main` (or **Run workflow**) → **dev build**, published as a pre-release `build-N`.
 - Push a tag `vX.Y.Z` → **versioned release** `Attacca X.Y.Z`, marked **Latest**.
   The app's version is taken from the tag; the build number is the Actions run number.
-- The phone link `…/releases/latest/download/Attacca.ipa` always gives the newest **versioned** release.
+- The phone link `…/releases/latest/download/Attacca.ipa` always gives the newest **versioned** release;
+  dev builds are pre-releases and are skipped.
 - Version shown in the app: ⚙︎ → bottom of the screen.
 
 ```bash
-git tag v1.0.0 && git push origin v1.0.0     # cut a release
+git tag v1.0.2 && git push origin v1.0.2     # cut the next release
 ```
 
 ## Install (SideStore)
@@ -50,7 +52,7 @@ SideStore signs the IPA on the iPhone with your Apple ID.
 
 1. One-time: install SideStore via iloader (computer + USB), install **LocalDevVPN**,
    enable **Settings → Privacy & Security → Developer Mode**.
-2. In iPhone Safari open `https://github.com/<owner>/Attacca/releases/latest/download/Attacca.ipa` → **Download** (lands in Files → Downloads).
+2. In iPhone Safari open `https://github.com/JagSingh/Attacca/releases/latest/download/Attacca.ipa` → **Download** (lands in Files → Downloads).
 3. Connect LocalDevVPN → **SideStore → My Apps → +** → pick `Attacca.ipa`.
 4. Every 7 days: LocalDevVPN → SideStore → **Refresh All**.
 
