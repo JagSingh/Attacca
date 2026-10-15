@@ -14,7 +14,7 @@ and play every audio file in a folder one after another, sorted by file name.
 - Folder tree browsing, audio files listed per folder
 - Sequential playback in name order (Finder-style: "Track 2" before "Track 10")
 - **Gapless** transitions between tracks (true *attacca*), via SFBAudioEngine
-- Formats: **Opus**, Ogg Vorbis, FLAC, MP3, AAC/M4A, ALAC, WAV, AIFF, CAF, WavPack, Monkey's Audio, Musepack, and more.
+- Formats: Ogg Vorbis, FLAC, MP3, AAC/M4A, ALAC, WAV, AIFF, CAF, WavPack, Monkey's Audio, Musepack, and more.
   Only files the engine can decode are listed.
 - Downloads iCloud placeholders on demand; prefetches the next 2 tracks
 - "Download all" button per folder (cloud icon, top right)
